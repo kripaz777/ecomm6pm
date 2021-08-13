@@ -13,3 +13,16 @@ class HomeView(BaseView):
 		self.views['subcategories'] = SubCategory.objects.all()
 		self.views['items'] = Product.objects.filter(status = 'active')
 		return render(request,'index.html',self.views)
+
+class SubCategoryViews(BaseView):
+	def get(self,request,slug):
+		id = SubCategory.objects.get(slug = slug).id
+		self.views['subcategories_product'] = Product.objects.filter(subcategory_id = id)
+		return render(request,'subcategory.html',self.views)
+
+
+class BrandViews(BaseView):
+	def get(self,request,slug):
+		id = Brand.objects.get(slug = slug).id
+		self.views['brand_product'] = Product.objects.filter(brand_id = id)
+		return render(request,'brand.html',self.views)
