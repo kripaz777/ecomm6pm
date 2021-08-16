@@ -44,6 +44,7 @@ class Slider(models.Model):
 
 class Product(models.Model):
 	title = models.CharField(max_length = 500)
+	slug = models.CharField(max_length = 500, default = "",blank = True)
 	price = models.IntegerField()
 	discounted_price = models.IntegerField()
 	status =  models.CharField(max_length = 100,choices = (('active','active'),('','inactive')))
@@ -57,3 +58,6 @@ class Product(models.Model):
 
 	def __str__(self):
 		return self.title
+
+	def get_url(self):
+		return reverse("home:product",kwargs = {'slug':self.slug})

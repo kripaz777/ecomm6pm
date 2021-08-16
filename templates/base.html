@@ -135,9 +135,11 @@
 						</div>
 					</div>
 					<div class="col-sm-3">
+						<form action="{% url 'home:search' %}" method = "GET">
 						<div class="search_box pull-right">
-							<input type="text" placeholder="Search"/>
+							<input type="text" name = "query" placeholder="Search"/>
 						</div>
+					</form>
 					</div>
 				</div>
 			</div>
