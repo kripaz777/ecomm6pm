@@ -122,7 +122,18 @@
 											<div class="overlay-content">
 												<h2>${{item.price}}</h2>
 												<a href = "{{item.get_url}}"><p>{{item.title}}</p></a>
-												<a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
+
+												<form action = "{% url 'home:add-to-cart' %}" method = "POST">
+										{% csrf_token %}
+						
+									<input name = "slug" value = "{{item.slug}}" type = "hidden">
+									<input name = "quantity" value = "1" type = "hidden">
+									<button type="submit" class="btn btn-fefault cart">
+										<i class="fa fa-shopping-cart"></i>
+										Add to cart
+									</button>
+								</form>
+
 											</div>
 										</div>
 								</div>

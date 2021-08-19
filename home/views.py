@@ -71,3 +71,38 @@ def signup(request):
 				return redirect('/signup')
 
 	return render(request,'suignup.html')
+
+
+def add_to_cart(request):
+	if request.method == 'POST':
+		slug = request.POST['slug']
+		quantity = request.POST['quantity']
+		username = request.user.username
+		items = Product.objects.filter(slug = slug)[0]
+		price = Product.objects.get(slug = slug).price
+		total = int(quantity)*int(price)
+
+		data = Cart.objects.create(
+			slug = slug,
+			quantity = quantity,
+			username = username,
+			items = items,
+			total = total
+			)
+		data.save()
+		return redirect('/')
+
+class CartView(BaseView):
+	def get(self,request):
+		self.views['my_cart']=Cart.objects.filter(username = request.user.username,checkout = False)
+		return render(request,'cart.html',self.views)
+
+def remove_cart(request,slug):
+	if Cart.objects.filter(username = request.user.username,checkout = False,slug = slug).exists():
+
+		Cart.objects.filter(username = request.user.username,checkout = False,slug = slug).delete()
+
+		return redirect('/cart')
+
+
+
