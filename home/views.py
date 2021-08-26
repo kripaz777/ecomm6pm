@@ -3,6 +3,7 @@ from django.views.generic import View
 from .models import *
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator
 
 # Create your views here.
 class BaseView(View):
@@ -29,6 +30,10 @@ class SubCategoryViews(BaseView):
 	def get(self,request,slug):
 		id = SubCategory.objects.get(slug = slug).id
 		self.views['subcategories_product'] = Product.objects.filter(subcategory_id = id)
+		paginator = Paginator(self.views['subcategories_product'], 1) # Show 25 contacts per page.
+		page_number = request.GET.get('page')
+
+		self.views['page_obj'] = paginator.get_page(page_number)
 		return render(request,'subcategory.html',self.views)
 
 
@@ -82,14 +87,21 @@ def add_to_cart(request):
 		price = Product.objects.get(slug = slug).price
 		total = int(quantity)*int(price)
 
-		data = Cart.objects.create(
-			slug = slug,
-			quantity = quantity,
-			username = username,
-			items = items,
-			total = total
-			)
-		data.save()
+		if Cart.objects.filter(username = request.user.username,checkout = False,slug = slug).exists():
+			qty = Cart.objects.get(username = request.user.username,checkout = False,slug = slug).quantity
+			price = Product.objects.get(slug = slug).price
+			quantity = int(quantity) +int(qty)
+			total = int(price)*int(quantity)
+			Cart.objects.filter(username = request.user.username,checkout = False,slug = slug).update(quantity = quantity,total = total)
+		else:
+			data = Cart.objects.create(
+				slug = slug,
+				quantity = quantity,
+				username = username,
+				items = items,
+				total = total
+				)
+			data.save()
 		return redirect('/')
 
 class CartView(BaseView):
@@ -112,7 +124,10 @@ from .serializers import *
 from rest_framework import generics
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter,SearchFilter
-
+from rest_framework.views import APIView
+from django.http import Http404
+from rest_framework import status
+from rest_framework.response import Response
 
 class ItemViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
@@ -125,4 +140,31 @@ class ItemFilterView(generics.ListAPIView):
 	filter_fields = ['id','price','labels','category','subcategory']
 	ordering_fields = ['id','title','price']
 	search_fields = ['title','description']
+
+class ItemDetailView(APIView):
+	def get_object(self,pk):
+		try:
+			return Product.objects.get(id = pk)
+		except Item.DoesNotExists:
+			raise Http404
+	def get(self,request,pk,format = None):
+		try:
+			item = self.get_object(pk)
+			serializer = ItemSerializer(item)
+			return Response(serializer.data)
+		except:
+			raise Http404
+
+	def put(self,request,pk,format = None):
+		item = self.get_object(pk)
+		serializer = ItemSerializer(item,data = request.data)
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data)
+		return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+
+	def delete(self,request,pk,format=None):
+		item = self.get_object(pk)
+		item.delete()
+		return Response("Record is deleted Successfully!",status = status.HTTP_200_OK)
 

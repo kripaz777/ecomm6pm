@@ -9,4 +9,6 @@ router.register(r'item', ItemViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('filter_tiems/',ItemFilterView.as_view(),name = 'filter_tiems'),
+    path('item_detail/<int:pk>',ItemDetailView.as_view(),name = 'item_detail'),
    ]
+   
