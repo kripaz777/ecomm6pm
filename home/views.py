@@ -4,6 +4,8 @@ from .models import *
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
+
 
 # Create your views here.
 class BaseView(View):
@@ -20,10 +22,26 @@ class HomeView(BaseView):
 
 
 class PrductDetailView(BaseView):
-	def get(self,request,slug):	
+	def get(self,request,slug):
+		self.views['view_review'] = Review.objects.filter(slug = slug)
 		self.views['detail_product'] = Product.objects.filter(slug = slug)
+		self.views['slug'] = slug
 		return render(request,'product-details.html',self.views)
 
+@login_required
+def review(request):	
+	username = request.user.username
+	email = request.user.email
+	slug = request.POST.get('slug')
+	comment = request.POST.get('comment')
+	data = Review.objects.create(
+		username = username,
+		email = email,
+		slug = slug,
+		comment = comment
+		)
+	data.save()
+	return redirect(f"/product/{slug}")
 
 
 class SubCategoryViews(BaseView):

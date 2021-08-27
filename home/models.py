@@ -76,3 +76,11 @@ class Cart(models.Model):
 
 	def remove_cart(self):
 		return reverse("home:remove-cart",kwargs = {'slug':self.slug})
+
+
+class Review(models.Model):
+	username = models.CharField(max_length = 300)
+	email = models.CharField(max_length = 300)
+	slug = models.CharField(max_length = 400)
+	comment = models.TextField()
+	date = models.DateTimeField(auto_now_add = True)
